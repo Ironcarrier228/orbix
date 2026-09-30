@@ -72,6 +72,9 @@ internal sealed partial class OverlayWindow : Window
     private bool _firstShowDone;
     private bool _refreshPending;
     private bool _lastShowLogged = true;
+    private bool _winCapture;
+    private bool _trackingLeave;
+    private long _lastOrbDownTick;
     private string? _orbImageKey;
     private ImageSource? _orbImage;
 
@@ -492,6 +495,33 @@ internal sealed partial class OverlayWindow : Window
 
                 break;
             }
+            case Win32.WM_MOUSEMOVE when IsMenuOpen:
+                MenuPointerMoved(StageFromLParam(lParam, false));
+                break;
+            case Win32.WM_LBUTTONDOWN when IsMenuOpen:
+                Win32.SetCapture(_hwnd);
+                _winCapture = true;
+                MenuPointerDown(StageFromLParam(lParam, false));
+                break;
+            case Win32.WM_LBUTTONUP when IsMenuOpen:
+                if (_winCapture)
+                {
+                    Win32.ReleaseCapture();
+                    _winCapture = false;
+                }
+
+                MenuPointerUp(StageFromLParam(lParam, false), MouseButton.Left);
+                break;
+            case Win32.WM_RBUTTONUP when IsMenuOpen:
+                MenuPointerUp(StageFromLParam(lParam, false), MouseButton.Right);
+                break;
+            case Win32.WM_MOUSEWHEEL when IsMenuOpen:
+                _menu.Wheel(unchecked((short)((long)wParam >> 16)));
+                break;
+            case Win32.WM_MOUSELEAVE when IsMenuOpen:
+                _trackingLeave = false;
+                _menu.PointerLeft();
+                break;
             case Win32.WM_DPICHANGED:
             case Win32.WM_DISPLAYCHANGE:
                 Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
@@ -508,6 +538,81 @@ internal sealed partial class OverlayWindow : Window
         }
 
         return IntPtr.Zero;
+    }
+
+    /// <summary>Stage point (origin = orb centre, DIPs) from a mouse message lParam (client or screen pixels).</summary>
+    private Point StageFromLParam(IntPtr lParam, bool screen)
+    {
+        long packed = lParam.ToInt64();
+        int x = unchecked((short)(packed & 0xFFFF));
+        int y = unchecked((short)((packed >> 16) & 0xFFFF));
+        if (screen)
+        {
+            Win32.GetWindowRect(_hwnd, out var wr);
+            x -= wr.Left;
+            y -= wr.Top;
+        }
+
+        Win32.GetClientRect(_hwnd, out var cr);
+        double scale = _monitor.Scale;
+        return new Point((x - cr.Width / 2.0) / scale, (y - cr.Height / 2.0) / scale);
+    }
+
+    private void MenuPointerMoved(Point p)
+    {
+        if (_orbDrag != null)
+        {
+            DragOrb();
+            return;
+        }
+
+        _menu.PointerMoved(p);
+        Cursor = _menu.CurrentCursor;
+        if (!_trackingLeave)
+        {
+            var t = new Win32.TRACKMOUSEEVENT
+            {
+                cbSize = System.Runtime.InteropServices.Marshal.SizeOf<Win32.TRACKMOUSEEVENT>(),
+                dwFlags = Win32.TME_LEAVE,
+                hwndTrack = _hwnd,
+                dwHoverTime = 0,
+            };
+            _trackingLeave = Win32.TrackMouseEvent(ref t);
+        }
+    }
+
+    private void MenuPointerDown(Point p)
+    {
+        var hit = _menu.HitTest(p);
+        if (hit.Kind == HitKind.Orb && _menu.IsEdit && _config.Orb.AllowMove)
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastOrbDownTick < 500)
+            {
+                _lastOrbDownTick = 0;
+                ResetOrbPosition();
+                return;
+            }
+
+            _lastOrbDownTick = now;
+            Win32.GetCursorPos(out var cursor);
+            _orbDrag = new OrbDrag(cursor.X, cursor.Y, _menuCenterX, _menuCenterY, false);
+            return;
+        }
+
+        _menu.PointerDown(p, MouseButton.Left);
+    }
+
+    private void MenuPointerUp(Point p, MouseButton button)
+    {
+        if (_orbDrag != null)
+        {
+            FinishOrbDrag();
+            return;
+        }
+
+        _menu.PointerUp(p, button);
+        Cursor = _menu.CurrentCursor;
     }
 
     private void OnDeactivated(object? sender, EventArgs e)
@@ -829,10 +934,6 @@ internal sealed partial class OverlayWindow : Window
             _orbPressed = false;
             UpdateOrbOpacity();
         }
-        else if (IsMenuOpen && !_captured)
-        {
-            _menu.PointerLeft();
-        }
     }
 
     private void OnPreviewMouseMove(object sender, MouseEventArgs e)
@@ -841,6 +942,11 @@ internal sealed partial class OverlayWindow : Window
         {
             DragOrb();
             return;
+        }
+
+        if (IsMenuOpen)
+        {
+            return; // fed from WndProc
         }
 
         if (_state == OverlayState.Orb)
@@ -863,6 +969,11 @@ internal sealed partial class OverlayWindow : Window
 
     private void OnPreviewLeftDown(object sender, MouseButtonEventArgs e)
     {
+        if (IsMenuOpen)
+        {
+            return; // fed from WndProc
+        }
+
         if (_state == OverlayState.Orb)
         {
             _orbPressed = true;
@@ -905,6 +1016,11 @@ internal sealed partial class OverlayWindow : Window
 
     private void OnPreviewLeftUp(object sender, MouseButtonEventArgs e)
     {
+        if (IsMenuOpen)
+        {
+            return; // fed from WndProc
+        }
+
         if (_state == OverlayState.Orb)
         {
             bool click = _orbPressed;
@@ -941,6 +1057,11 @@ internal sealed partial class OverlayWindow : Window
 
     private void OnPreviewRightUp(object sender, MouseButtonEventArgs e)
     {
+        if (IsMenuOpen)
+        {
+            return; // fed from WndProc
+        }
+
         if (_state == OverlayState.Orb)
         {
             e.Handled = true;
@@ -959,8 +1080,7 @@ internal sealed partial class OverlayWindow : Window
     {
         if (IsMenuOpen)
         {
-            _menu.Wheel(e.Delta);
-            e.Handled = true;
+            e.Handled = true; // fed from WndProc
         }
     }
 

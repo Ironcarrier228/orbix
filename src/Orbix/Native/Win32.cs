@@ -193,6 +193,9 @@ internal static class Win32
     public const int WM_MBUTTONDOWN = 0x0207;
     public const int WM_MBUTTONUP = 0x0208;
     public const int WM_MOUSEMOVE = 0x0200;
+    public const int WM_MOUSEWHEEL = 0x020A;
+    public const int WM_MOUSELEAVE = 0x02A3;
+    public const uint TME_LEAVE = 0x00000002;
     public const int WM_APP = 0x8000;
     public const int MA_NOACTIVATE = 3;
     public const int HTTRANSPARENT = -1;
@@ -370,6 +373,20 @@ internal static class Win32
 
     [DllImport("user32.dll")]
     public static extern bool GetCursorPos(out POINT lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TRACKMOUSEEVENT
+    {
+        public int cbSize;
+        public uint dwFlags;
+        public IntPtr hwndTrack;
+        public uint dwHoverTime;
+    }
+
+    [DllImport("user32.dll")] public static extern IntPtr SetCapture(IntPtr hwnd);
+    [DllImport("user32.dll")] public static extern bool ReleaseCapture();
+    [DllImport("user32.dll")] public static extern bool TrackMouseEvent(ref TRACKMOUSEEVENT eventTrack);
+    [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr hwnd, out RECT rect);
 
     [DllImport("user32.dll")]
     public static extern bool SetCursorPos(int x, int y);

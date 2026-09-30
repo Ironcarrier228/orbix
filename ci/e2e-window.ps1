@@ -18,8 +18,10 @@ if ($Mode -eq 'fullscreen') {
     $form.Bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
 }
 else {
-    $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
-    $form.Size = [System.Drawing.Size]::new(520, 340)
+    # explicit bounds: CenterScreen proved unreliable in the CI session
+    $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    $form.StartPosition = [System.Windows.Forms.FormStartPosition]::Manual
+    $form.Bounds = [System.Drawing.Rectangle]::new($b.X + [int](($b.Width - 520) / 2), $b.Y + [int](($b.Height - 340) / 2), 520, 340)
 }
 
 $form.Add_Shown({ $form.Activate(); $form.BringToFront() })

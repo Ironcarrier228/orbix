@@ -517,6 +517,7 @@ Invoke-Scenario 'basic' {
         Add-Info ("window at the group point: " + [E2E.Native]::DescribeWindow([E2E.Native]::RootWindowAt($folder.X, $folder.Y)))
         $before = (Get-LayoutLines $app).Count
         [E2E.Native]::MoveTo($folder.X, $folder.Y)
+        Add-Info ("cursor after MoveTo: " + [E2E.Native]::CursorPos())
         $ms = Wait-Layout $app $before 2 2500
         Add-Check 'menu/hover-opens-second-orbit' ($ms -ge 0) "hover on the group at $($folder.X),$($folder.Y)"
         Add-LogTrace $app 'hover'
@@ -734,6 +735,7 @@ Invoke-Scenario 'desktop-only' {
         $child = Start-Child 'window'
         Add-Check 'desktop-only/test-window-created' ($child.Hwnd -ne [IntPtr]::Zero) ''
         if ($child.Hwnd -ne [IntPtr]::Zero) {
+            $null = Wait-Until { [E2E.Native]::GetRect($child.Hwnd).Width -gt 100 } 3000 50
             $cr = [E2E.Native]::GetRect($child.Hwnd)
             Add-Info ("child rect: {0},{1} {2}x{3}; window at centre: {4}" -f $cr.Left, $cr.Top, $cr.Width, $cr.Height, ([E2E.Native]::DescribeWindow([E2E.Native]::RootWindowAt($cx0, $cy0))))
         }

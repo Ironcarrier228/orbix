@@ -119,6 +119,8 @@ namespace E2E
         }
 
         public static RECT GetRect(IntPtr hwnd) { RECT r; GetWindowRect(hwnd, out r); return r; }
+
+        public static string CursorPos() { POINT p; GetCursorPos(out p); return p.X + "," + p.Y; }
         public static bool IsVisible(IntPtr hwnd) { return IsWindowVisible(hwnd); }
         public static long ExStyle(IntPtr hwnd) { return GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64(); }
         public static IntPtr Foreground() { return GetForegroundWindow(); }
