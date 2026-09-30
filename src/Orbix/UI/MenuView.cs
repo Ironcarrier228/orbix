@@ -373,6 +373,12 @@ internal sealed partial class MenuView
         }
 
         _layout = layout;
+        if (Logger.DebugEnabled)
+        {
+            // slot centres relative to the centre of the orb, in DIPs (used by the end-to-end test to click on the items)
+            Logger.Debug("Layout " + string.Join(" | ", layout.Rings.Select(r =>
+                $"L{r.Level} r={r.Radius:0.#} s={r.ItemSize:0.#} [" + string.Join(";", r.Slots.Select(slot => $"{slot.X:0.#},{slot.Y:0.#}")) + "]")));
+        }
 
         var wanted = new List<RingView>();
         foreach (var ringLayout in layout.Rings)

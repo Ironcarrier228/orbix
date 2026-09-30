@@ -34,6 +34,18 @@ internal static class Logger
 
     public static string? FilePath => _path;
 
+    /// <summary>Verbose diagnostics (layout positions, timings): ORBIX_LOG=debug or the --debug switch.</summary>
+    public static bool DebugEnabled { get; set; } =
+        string.Equals(Environment.GetEnvironmentVariable("ORBIX_LOG"), "debug", StringComparison.OrdinalIgnoreCase);
+
+    public static void Debug(string message)
+    {
+        if (DebugEnabled)
+        {
+            Write("DEBUG", message);
+        }
+    }
+
     public static void Info(string message) => Write("INFO ", message);
 
     public static void Warn(string message) => Write("WARN ", message);

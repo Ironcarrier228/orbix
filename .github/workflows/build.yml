@@ -34,3 +34,37 @@ jobs:
 
       - name: Test
         run: ./ci/test.ps1
+
+  e2e:
+    name: e2e-windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # the very file that is shipped as the portable build is the one that gets tested
+      - name: Publish portable Orbix.exe
+        run: ./ci/publish.ps1 -Variant portable
+
+      - name: End-to-end test on the desktop
+        run: ./ci/e2e.ps1 -Exe ./artifacts/portable/Orbix.exe -Out ./artifacts/e2e
+
+      # screenshots travel as annotations (ten per step)
+      - name: Screenshots 1
+        if: always()
+        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 0 -Take 9
+
+      - name: Screenshots 2
+        if: always()
+        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 9 -Take 9
+
+      - name: Screenshots 3
+        if: always()
+        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 18 -Take 9

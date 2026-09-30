@@ -8,7 +8,8 @@ namespace Orbix;
 /// Entry point. The single-instance check runs before WPF is even created, so a second start costs a few milliseconds:
 /// it forwards its command to the running instance and exits.
 ///
-/// Command line: --settings | --open | --toggle-orb | --exit | --minimized (accepted, the tray start is the default).
+/// Command line: --settings | --open | --toggle-orb | --exit | --minimized (accepted, the tray start is the default) |
+/// --debug (verbose orbix.log).
 /// </summary>
 public static class Program
 {
@@ -17,6 +18,10 @@ public static class Program
     {
         string dataDirectory = DataPaths.DefaultDirectory;
         Logger.Initialize(dataDirectory);
+        if (args.Contains("--debug"))
+        {
+            Logger.DebugEnabled = true;
+        }
 
         var mutex = SingleInstance.TryAcquire(dataDirectory);
         if (mutex == null)

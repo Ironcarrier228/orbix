@@ -461,6 +461,22 @@ internal sealed partial class OverlayWindow : Window
             case Win32.WM_MOUSEACTIVATE when _state is OverlayState.Orb or OverlayState.Hidden:
                 handled = true;
                 return (IntPtr)Win32.MA_NOACTIVATE;
+            case Win32.WM_NCHITTEST when _state == OverlayState.Orb:
+            {
+                // Only the circle of the orb takes the mouse: the corners of the window and the anti-aliased rim
+                // are click-through, whatever alpha value they have.
+                long packed = lParam.ToInt64();
+                double dx = unchecked((short)(packed & 0xFFFF)) - _orbCenterX;
+                double dy = unchecked((short)((packed >> 16) & 0xFFFF)) - _orbCenterY;
+                double radius = _config.Orb.Size * _monitor.Scale / 2 + 1;
+                if (dx * dx + dy * dy > radius * radius)
+                {
+                    handled = true;
+                    return (IntPtr)Win32.HTTRANSPARENT;
+                }
+
+                break;
+            }
             case Win32.WM_DPICHANGED:
             case Win32.WM_DISPLAYCHANGE:
                 Dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
