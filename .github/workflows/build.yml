@@ -39,6 +39,8 @@ jobs:
     name: e2e-windows
     runs-on: windows-latest
     timeout-minutes: 30
+    permissions:
+      contents: write # to publish the e2e screenshots to the ci-shots branch
     defaults:
       run:
         shell: pwsh
@@ -56,15 +58,18 @@ jobs:
       - name: End-to-end test on the desktop
         run: ./ci/e2e.ps1 -Exe ./artifacts/portable/Orbix.exe -Out ./artifacts/e2e
 
-      # screenshots travel as annotations (ten per step)
-      - name: Screenshots 1
+      # annotations truncate long messages, so the screenshots travel as a commit on a scratch branch
+      - name: Publish screenshots to ci-shots
         if: always()
-        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 0 -Take 9
-
-      - name: Screenshots 2
-        if: always()
-        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 9 -Take 9
-
-      - name: Screenshots 3
-        if: always()
-        run: ./ci/emit-shots.ps1 -Dir ./artifacts/e2e -Skip 18 -Take 9
+        run: |
+          if (-not (Test-Path ./artifacts/e2e)) { exit 0 }
+          $shots = @(Get-ChildItem ./artifacts/e2e -Include *.jpg, *.png -Recurse -ErrorAction SilentlyContinue)
+          if ($shots.Count -eq 0) { exit 0 }
+          git config user.name "orbix-ci"
+          git config user.email "ci@users.noreply.github.com"
+          Remove-Item docs/img -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force docs/img | Out-Null
+          Copy-Item $shots.FullName -Destination docs/img/
+          git add docs/img
+          git commit -m "ci: e2e screenshots [skip ci]"
+          git push --force origin HEAD:refs/heads/ci-shots
