@@ -256,12 +256,12 @@
                     <Grid Height="20">
                         <Border Height="4" CornerRadius="2" Background="{DynamicResource SurfaceHi}" VerticalAlignment="Center" />
                         <Track x:Name="PART_Track">
-                            <Track.DecreaseButton>
+                            <Track.DecreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource StSliderDec}" Command="Slider.DecreaseLarge" />
-                            </Track.DecreaseButton>
-                            <Track.IncreaseButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource StSliderInc}" Command="Slider.IncreaseLarge" />
-                            </Track.IncreaseButton>
+                            </Track.IncreaseRepeatButton>
                             <Track.Thumb>
                                 <Thumb Style="{StaticResource StSliderThumb}" />
                             </Track.Thumb>
@@ -304,12 +304,12 @@
                 <ControlTemplate TargetType="ScrollBar">
                     <Grid Background="Transparent">
                         <Track x:Name="PART_Track" IsDirectionReversed="True">
-                            <Track.DecreaseButton>
+                            <Track.DecreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource StScrollPage}" Command="ScrollBar.PageUp" />
-                            </Track.DecreaseButton>
-                            <Track.IncreaseButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource StScrollPage}" Command="ScrollBar.PageDown" />
-                            </Track.IncreaseButton>
+                            </Track.IncreaseRepeatButton>
                             <Track.Thumb>
                                 <Thumb Style="{StaticResource StScrollThumb}" />
                             </Track.Thumb>
@@ -327,12 +327,12 @@
                         <ControlTemplate TargetType="ScrollBar">
                             <Grid Background="Transparent">
                                 <Track x:Name="PART_Track" IsDirectionReversed="False">
-                                    <Track.DecreaseButton>
+                                    <Track.DecreaseRepeatButton>
                                         <RepeatButton Style="{StaticResource StScrollPage}" Command="ScrollBar.PageLeft" />
-                                    </Track.DecreaseButton>
-                                    <Track.IncreaseButton>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
                                         <RepeatButton Style="{StaticResource StScrollPage}" Command="ScrollBar.PageRight" />
-                                    </Track.IncreaseButton>
+                                    </Track.IncreaseRepeatButton>
                                     <Track.Thumb>
                                         <Thumb Style="{StaticResource StScrollThumb}" />
                                     </Track.Thumb>
