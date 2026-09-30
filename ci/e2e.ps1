@@ -148,7 +148,7 @@ function Start-App([string]$Name, [string]$ConfigJson = '', [string[]]$AppArgs =
 
     $clock = [Diagnostics.Stopwatch]::StartNew()
     $proc = [Diagnostics.Process]::Start($psi)
-    $app = [pscustomobject]@{ Name = $Name; Dir = $dir; Proc = $proc; Hwnd = [IntPtr]::Zero; StartMs = -1 }
+    $app = [pscustomobject]@{ Name = $Name; Dir = $dir; Proc = $proc; Hwnd = [IntPtr]::Zero; StartMs = -1; LogPos = 0 }
     $null = Wait-Until {
         $h = [E2E.Native]::FindWindow($proc.Id, 'OrbixOverlay')
         if ($h -ne [IntPtr]::Zero -and [E2E.Native]::IsVisible($h)) { $app.Hwnd = $h; $true } else { $false }
@@ -177,6 +177,15 @@ function Stop-App($App) {
     $graceful = $App.Proc.WaitForExit(6000)
     if (-not $graceful) { try { $App.Proc.Kill() } catch { } }
     return $graceful
+}
+
+# app-side DEBUG traces (pointer hits, hover-open, clicks, visibility) collected since the previous call
+function Add-LogTrace($App, [string]$Label) {
+    $all = @(Read-Log $App)
+    $new = @($all | Select-Object -Skip $App.LogPos | Where-Object { $_ -match ' DEBUG (Hot|HoverOpen|Expand|Click|Visibility|RefreshAll) ' })
+    $App.LogPos = $all.Count
+    $tail = @($new | Select-Object -Last 16 | ForEach-Object { if ($_.Length -gt 200) { $_.Substring(0, 200) } else { $_ } })
+    Add-Info ("$Label trace:`n" + (($tail | ForEach-Object { $_ -replace '^\d{4}-\d\d-\d\d ', '' }) -join "`n"))
 }
 
 function Save-LogTail($App) {
@@ -505,10 +514,12 @@ Invoke-Scenario 'basic' {
         Start-Sleep -Milliseconds 400
         $layout = @(Get-Layout $app)
         $folder = Get-SlotPoint $app $layout 0 1
+        Add-Info ("window at the group point: " + [E2E.Native]::DescribeWindow([E2E.Native]::RootWindowAt($folder.X, $folder.Y)))
         $before = (Get-LayoutLines $app).Count
         [E2E.Native]::MoveTo($folder.X, $folder.Y)
         $ms = Wait-Layout $app $before 2 2500
         Add-Check 'menu/hover-opens-second-orbit' ($ms -ge 0) "hover on the group at $($folder.X),$($folder.Y)"
+        Add-LogTrace $app 'hover'
         $layout = @(Get-Layout $app)
         if ($layout.Count -ge 2) {
             Save-Shot 'menu-group' $cx0 $cy0
@@ -536,6 +547,7 @@ Invoke-Scenario 'basic' {
         $layout = @(Get-Layout $app)
         $p0 = Get-SlotPoint $app $layout 0 0
         [E2E.Native]::Click($p0.X, $p0.Y)
+        Add-LogTrace $app 'launch-click'
         $launched = Wait-Until { Test-Path $m1 } 6000 100
         Add-Check 'launch/item-in-first-orbit' ($launched -ge 0) "marker file after $launched ms"
         [void](Wait-MenuClosed $app 2500)
@@ -667,6 +679,7 @@ Invoke-Scenario 'light' {
             [E2E.Native]::Click($grp.X, $grp.Y)
             $ms = Wait-Layout $app $before 2 2500
             Add-Check 'light/click-opens-second-orbit' ($ms -ge 0) ''
+            Add-LogTrace $app 'light-click'
             Save-Shot 'light-group' $cx0 $cy0
         }
         [void](Close-ByEsc $app)
@@ -720,8 +733,13 @@ Invoke-Scenario 'desktop-only' {
         if ($app.Hwnd -eq [IntPtr]::Zero) { return }
         $child = Start-Child 'window'
         Add-Check 'desktop-only/test-window-created' ($child.Hwnd -ne [IntPtr]::Zero) ''
+        if ($child.Hwnd -ne [IntPtr]::Zero) {
+            $cr = [E2E.Native]::GetRect($child.Hwnd)
+            Add-Info ("child rect: {0},{1} {2}x{3}; window at centre: {4}" -f $cr.Left, $cr.Top, $cr.Width, $cr.Height, ([E2E.Native]::DescribeWindow([E2E.Native]::RootWindowAt($cx0, $cy0))))
+        }
         $hidden = Wait-Until { -not [E2E.Native]::IsVisible($app.Hwnd) } 5000 100
         Add-Check 'desktop-only/orb-hides-behind-a-window' ($hidden -ge 0) "hidden after $hidden ms"
+        Add-LogTrace $app 'desktop-only'
         Stop-Child $child
         $shown = Wait-Until { Test-OrbVisible $app } 5000 100
         Add-Check 'desktop-only/orb-returns' ($shown -ge 0) "visible again after $shown ms"

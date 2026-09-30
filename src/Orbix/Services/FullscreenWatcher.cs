@@ -145,10 +145,14 @@ internal sealed class FullscreenWatcher : IDisposable
     /// True when nothing but the desktop is visible at the given screen point (no application window covers it).
     /// Windows of this process, cloaked / minimized windows and click-through overlays are ignored.
     /// </summary>
-    public static bool IsPointOverDesktop(int x, int y)
+    public static bool IsPointOverDesktop(int x, int y) => IsPointOverDesktop(x, y, out _);
+
+    /// <summary>Overload that also reports the window which decided "an application covers the point".</summary>
+    public static bool IsPointOverDesktop(int x, int y, out IntPtr decidedBy)
     {
         bool result = true;
         bool decided = false;
+        decidedBy = IntPtr.Zero;
         uint self = (uint)Environment.ProcessId;
 
         Win32.EnumWindows((hwnd, _) =>
@@ -200,6 +204,7 @@ internal sealed class FullscreenWatcher : IDisposable
 
             result = false;
             decided = true;
+            decidedBy = hwnd;
             return false;
         }, IntPtr.Zero);
 

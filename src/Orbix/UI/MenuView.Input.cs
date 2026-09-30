@@ -135,6 +135,12 @@ internal sealed partial class MenuView
         }
 
         _hot = hit;
+        if (Logger.DebugEnabled)
+        {
+            Logger.Debug($"Hot {hit.Kind}" + (hit.Ring != null ? $" r{hit.Ring.Level}" : string.Empty) +
+                         $" i{hit.Index}" + (hit.Visual?.Item != null ? $" '{hit.Visual.Item.Name}'" : string.Empty) +
+                         $" ptr {_lastPointer.X:F0},{_lastPointer.Y:F0}");
+        }
 
         if (hit.Visual != null && !hit.OnDelete)
         {
@@ -256,6 +262,7 @@ internal sealed partial class MenuView
     private void OnHoverTimer(object? sender, EventArgs e)
     {
         _hoverTimer.Stop();
+        Logger.Debug($"HoverOpen tick hot={_hot.Kind} ring={(_hot.Ring != null ? _hot.Ring.Level.ToString() : "-")} group={_hot.Visual?.Item?.IsGroup == true}");
         if (_open && _hot.Kind == HitKind.Item && !_hot.OnDelete && _hot.Visual?.Item is { IsGroup: true } group && _hot.Ring != null && !IsExpanded(_hot.Ring, group))
         {
             ExpandGroup(_hot.Ring.Level, group);
@@ -269,6 +276,7 @@ internal sealed partial class MenuView
 
     private void ExpandGroup(int level, RadialItem group)
     {
+        Logger.Debug($"Expand level={level} '{group.Name}' path={_path.Count}");
         if (level > _path.Count)
         {
             return;
@@ -381,6 +389,7 @@ internal sealed partial class MenuView
 
     private void HandleClick(HitResult hit)
     {
+        Logger.Debug($"Click {hit.Kind}" + (hit.Ring != null ? $" r{hit.Ring.Level}" : string.Empty) + $" i{hit.Index}");
         switch (hit.Kind)
         {
             case HitKind.Orb:

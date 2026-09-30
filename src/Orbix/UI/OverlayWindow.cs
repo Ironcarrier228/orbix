@@ -71,6 +71,7 @@ internal sealed partial class OverlayWindow : Window
     private OrbDrag? _orbDrag;
     private bool _firstShowDone;
     private bool _refreshPending;
+    private bool _lastShowLogged = true;
     private string? _orbImageKey;
     private ImageSource? _orbImage;
 
@@ -214,6 +215,7 @@ internal sealed partial class OverlayWindow : Window
         bool cursorMode = _config.Orb.Monitor == MonitorMode.Cursor && MonitorService.Count() > 1;
         _monitorTimer.IsEnabled = cursorMode;
         _desktopTimer.IsEnabled = _config.Orb.Visibility == OrbVisibilityMode.DesktopOnly;
+        Logger.Debug($"RefreshAll mode={_config.Orb.Visibility} desktopTimer={_desktopTimer.IsEnabled} cursorTimer={cursorMode} state={_state}");
 
         if (_state is OverlayState.Orb or OverlayState.Hidden)
         {
@@ -243,6 +245,19 @@ internal sealed partial class OverlayWindow : Window
         }
 
         bool show = ShouldShowOrb();
+        if (Logger.DebugEnabled && show != _lastShowLogged)
+        {
+            _lastShowLogged = show;
+            string why = string.Empty;
+            if (_config.Orb.Visibility == OrbVisibilityMode.DesktopOnly)
+            {
+                FullscreenWatcher.IsPointOverDesktop(_orbCenterX, _orbCenterY, out var by);
+                why = " by=" + (by == IntPtr.Zero ? "desktop" : Win32.GetWindowClass(by));
+            }
+
+            Logger.Debug($"Visibility show={show} state={_state} mode={_config.Orb.Visibility}{why}");
+        }
+
         if (show && _state == OverlayState.Hidden)
         {
             _state = OverlayState.Orb;
