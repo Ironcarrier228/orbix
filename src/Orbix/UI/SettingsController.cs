@@ -2,6 +2,7 @@ using System.Windows;
 using Orbix.Core.Models;
 using Orbix.Core.Services;
 using Orbix.Services;
+using Orbix.UI.Settings;
 
 namespace Orbix.UI;
 
