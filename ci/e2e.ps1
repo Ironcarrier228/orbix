@@ -721,6 +721,48 @@ Invoke-Scenario 'light' {
     }
 }
 
+# ------------------------------------------------------------------------------------------------- settings window
+
+Invoke-Scenario 'settings' {
+    $items = @((ItemDef 'Notepad' 'app' 'notepad.exe'))
+    $app = Start-App 'settings' (MakeConfig $items -General @{ language = 'en'; welcomeShown = $true })
+    try {
+        Add-Check 'settings/app-starts' ($app.Hwnd -ne [IntPtr]::Zero) ''
+        if ($app.Hwnd -eq [IntPtr]::Zero) { return }
+        Start-Sleep -Milliseconds 800
+        $open = Invoke-Orbix $app @('--settings')
+        $hwnd = [IntPtr]::Zero
+        $null = Wait-Until {
+            $found = [IntPtr]::Zero
+            foreach ($w in [E2E.Native]::WindowHandles($app.Proc.Id)) {
+                if ([E2E.Native]::IsVisible($w) -and [E2E.Native]::TitleOf($w).StartsWith('Orbix')) {
+                    $t = [E2E.Native]::TitleOf($w)
+                    if ($t -ne 'OrbixOverlay' -and $t -ne 'Orbix.MessageWindow') { $found = $w }
+                }
+            }
+            if ($found -ne [IntPtr]::Zero) { $script:__settingsHwnd = $found; $true } else { $false }
+        } 10000 100
+        $hwnd = $script:__settingsHwnd
+        $script:__settingsHwnd = [IntPtr]::Zero
+        Add-Check 'settings/window-appears' ($hwnd -ne [IntPtr]::Zero) ("second instance exit {0} in {1} ms" -f $open.ExitCode, $open.Ms)
+        if ($hwnd -ne [IntPtr]::Zero) {
+            Start-Sleep -Milliseconds 700
+            [E2E.Native]::Activate($hwnd)
+            Start-Sleep -Milliseconds 400
+            $r = [E2E.Native]::GetRect($hwnd)
+            Add-Info ("settings window: {0},{1} {2}x{3}" -f $r.Left, $r.Top, $r.Width, $r.Height)
+            Add-Check 'settings/has-size' (($r.Width -ge 500) -and ($r.Height -ge 400)) ''
+            Save-Shot 'settings' ([int](($r.Left + $r.Right) / 2)) ([int](($r.Top + $r.Bottom) / 2)) ([int]([math]::Max($r.Width, $r.Height) / 2) + 6) 'jpg'
+        }
+        Test-LogClean $app 'settings'
+        Add-Check 'settings/exit' (Stop-App $app) ''
+    }
+    finally {
+        Save-LogTail $app
+        if (-not $app.Proc.HasExited) { try { $app.Proc.Kill() } catch { } }
+    }
+}
+
 # ------------------------------------------------------------------------------------------------- full-screen applications
 
 Invoke-Scenario 'fullscreen' {

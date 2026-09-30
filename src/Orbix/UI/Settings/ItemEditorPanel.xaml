@@ -1,0 +1,75 @@
+<UserControl x:Class="Orbix.UI.Settings.ItemEditorPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Orbix.UI.Settings">
+    <StackPanel Margin="0,4,0,0">
+        <Grid Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Name}" />
+            <TextBox x:Name="NameText" Grid.Column="1" Style="{StaticResource StTextBox}" />
+        </Grid>
+
+        <Grid Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Kind}" />
+            <ComboBox x:Name="KindCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+        </Grid>
+
+        <Grid x:Name="TargetRow" Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Target}" />
+            <TextBox x:Name="TargetText" Grid.Column="1" Style="{StaticResource StTextBox}" />
+            <Button x:Name="BrowseButton" Grid.Column="2" Style="{StaticResource StButton}" Margin="8,0,0,0"
+                    Content="{loc:Loc Settings.Browse}" />
+        </Grid>
+
+        <Grid x:Name="ArgsRow" Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Arguments}" />
+            <TextBox x:Name="ArgsText" Grid.Column="1" Style="{StaticResource StTextBox}" />
+        </Grid>
+
+        <Grid x:Name="SystemRow" Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Kind.System}" />
+            <ComboBox x:Name="SystemCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+        </Grid>
+
+        <StackPanel x:Name="RunAsRow" Margin="110,2,0,2">
+            <CheckBox x:Name="RunAsCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.RunAsAdmin}" />
+        </StackPanel>
+
+        <Grid x:Name="IconRow" Margin="0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Icon}" />
+            <Image x:Name="IconPreview" Grid.Column="1" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+            <Button x:Name="IconChangeButton" Grid.Column="2" Style="{StaticResource StButton}" Margin="10,0,0,0"
+                    Content="{loc:Loc Settings.ChangeIcon}" />
+            <Button x:Name="IconResetButton" Grid.Column="3" Style="{StaticResource StButton}" Margin="8,0,0,0"
+                    Content="{loc:Loc Settings.ResetIcon}" />
+        </Grid>
+
+        <TextBlock x:Name="GroupHint" Style="{StaticResource StMuted}" FontSize="12" Text="{loc:Loc Settings.GroupHint}" />
+    </StackPanel>
+</UserControl>
