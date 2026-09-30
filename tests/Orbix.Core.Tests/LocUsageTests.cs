@@ -69,7 +69,7 @@ public sealed class LocUsageTests
     [Fact]
     public void Every_Used_Key_Exists_In_Table()
     {
-        var missing = UsedKeys().Where(k => !Strings.Table.ContainsKey(k)).OrderBy(k => k).ToList();
+        var missing = UsedKeys().Where(k => !Loc.Has(k)).OrderBy(k => k).ToList();
         Assert.True(missing.Count == 0, "keys used but not declared: " + string.Join(", ", missing));
     }
 }
