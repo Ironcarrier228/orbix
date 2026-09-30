@@ -152,7 +152,7 @@ internal sealed class FullscreenWatcher : IDisposable
     {
         bool result = true;
         bool decided = false;
-        decidedBy = IntPtr.Zero;
+        IntPtr by = IntPtr.Zero;
         uint self = (uint)Environment.ProcessId;
 
         Win32.EnumWindows((hwnd, _) =>
@@ -204,9 +204,11 @@ internal sealed class FullscreenWatcher : IDisposable
 
             result = false;
             decided = true;
-            decidedBy = hwnd;
+            by = hwnd;
             return false;
         }, IntPtr.Zero);
+
+        decidedBy = by;
 
         return result;
     }
