@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Product>Orbix</Product>
+    <Authors>Orbix contributors</Authors>
+    <Copyright>Copyright (c) Orbix contributors. Licensed under GPL-3.0.</Copyright>
+    <RepositoryUrl>https://github.com/Ironcarrier228/orbix</RepositoryUrl>
+    <Deterministic>true</Deterministic>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CA1416;CA1711;CA1720;CA1707;CA1002;CA1819;CA1822;CA2211</NoWarn>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,27 @@
+## .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+launchSettings.json
+TestResults/
+*.trx
+*.log
+*.binlog
+msbuild*.log
+
+## Build outputs
+artifacts/
+publish/
+dist/
+out/
+*.nupkg
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store

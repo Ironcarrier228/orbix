@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Orbix.Core: platform-independent part of the application.
+    Models, radial layout maths, JSON config storage, hotkey parsing, search, localization.
+    No WPF / Win32 dependencies here -> everything is unit-testable on any OS.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Orbix.Core</RootNamespace>
+    <AssemblyName>Orbix.Core</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>
