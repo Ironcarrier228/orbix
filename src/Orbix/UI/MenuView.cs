@@ -40,7 +40,7 @@ internal sealed class RingView
 
     public Canvas Layer { get; } = new() { Width = 0, Height = 0, IsHitTestVisible = false };
 
-    public Path Guide { get; } = new() { IsHitTestVisible = false, Opacity = 0 };
+    public System.Windows.Shapes.Path Guide { get; } = new() { IsHitTestVisible = false, Opacity = 0 };
 
     public AnimatedDouble? GuideAlpha { get; set; }
 
