@@ -278,6 +278,12 @@ function Start-Child([string]$Mode) {
     if ($hwnd -ne [IntPtr]::Zero) {
         Start-Sleep -Milliseconds 400
         [E2E.Native]::Activate($hwnd)
+        if ([E2E.Native]::GetRect($hwnd).Width -le 50) {
+            # the form came up without a usable rectangle: place it ourselves instead of failing the scenario
+            $w = [E2E.Native]::GetSystemMetrics(0); $hgt = [E2E.Native]::GetSystemMetrics(1)
+            [E2E.Native]::ForceRect($hwnd, [int](($w - 520) / 2), [int](($hgt - 340) / 2), 520, 340)
+            Start-Sleep -Milliseconds 300
+        }
     }
     return [pscustomobject]@{ Process = $child; Hwnd = $hwnd }
 }
@@ -744,6 +750,7 @@ Invoke-Scenario 'desktop-only' {
         if ($child.Hwnd -ne [IntPtr]::Zero) {
             $null = Wait-Until { [E2E.Native]::GetRect($child.Hwnd).Width -gt 100 } 3000 50
             $cr = [E2E.Native]::GetRect($child.Hwnd)
+            Add-Info ("child alive=" + (-not $child.Process.HasExited) + "; windows: " + ([E2E.Native]::ListWindows($child.Process.Id) -join ' ; '))
             Add-Info ("child rect: {0},{1} {2}x{3}; window at centre: {4}" -f $cr.Left, $cr.Top, $cr.Width, $cr.Height, ([E2E.Native]::DescribeWindow([E2E.Native]::RootWindowAt($cx0, $cy0))))
         }
         $hidden = Wait-Until { -not [E2E.Native]::IsVisible($app.Hwnd) } 5000 100

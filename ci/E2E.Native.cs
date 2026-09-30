@@ -72,6 +72,7 @@ namespace E2E
         [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hwnd);
         [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hwnd, IntPtr dc);
         [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
+        [DllImport("user32.dll")] static extern bool MoveWindow(IntPtr hwnd, int x, int y, int w, int h, bool repaint);
         [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr dc);
         [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleBitmap(IntPtr dc, int width, int height);
         [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
@@ -120,6 +121,9 @@ namespace E2E
         }
 
         public static RECT GetRect(IntPtr hwnd) { RECT r; GetWindowRect(hwnd, out r); return r; }
+
+        /// <summary>Forces a window rectangle (the CI helper form sometimes comes up zero-sized).</summary>
+        public static void ForceRect(IntPtr hwnd, int x, int y, int w, int h) { MoveWindow(hwnd, x, y, w, h, true); ShowWindow(hwnd, 5 /*SW_SHOW*/); }
 
         public static string CursorPos() { POINT p; GetCursorPos(out p); return p.X + "," + p.Y; }
         public static bool IsVisible(IntPtr hwnd) { return IsWindowVisible(hwnd); }
