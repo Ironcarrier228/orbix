@@ -25,7 +25,6 @@ $script:Results = [System.Collections.Generic.List[object]]::new()
 $script:Info = [System.Collections.Generic.List[string]]::new()
 $script:LogTails = [System.Collections.Generic.List[string]]::new()
 $script:Children = [System.Collections.Generic.List[object]]::new()
-$script:CopyOp = [System.Drawing.CopyPixelOperation]::SourceCopy -bor [System.Drawing.CopyPixelOperation]::CaptureBlt
 
 $VK = @{ Ctrl = 0x11; Alt = 0x12; Space = 0x20; Esc = 0x1B; E = 0x45; N = 0x4E; O = 0x4F }
 $Hotkey = [int[]]@($VK.Ctrl, $VK.Alt, $VK.Space)
@@ -190,6 +189,14 @@ function Test-LogClean($App, [string]$Name) {
     Add-Check "$Name/log-has-no-errors" ($bad.Count -eq 0) (($bad | Select-Object -First 3) -join ' || ')
 }
 
+# screen region as a bitmap, layered windows included
+function Get-ScreenBitmap([int]$X, [int]$Y, [int]$W, [int]$H) {
+    $handle = [E2E.Native]::CaptureScreen($X, $Y, $W, $H)
+    if ($handle -eq [IntPtr]::Zero) { throw "screen capture of $W x $H at $X,$Y failed" }
+    try { return [System.Drawing.Image]::FromHbitmap($handle) }
+    finally { [void][E2E.Native]::DeleteObject($handle) }
+}
+
 function Save-Shot([string]$Name, [int]$CX, [int]$CY, [int]$Half = 290, [string]$Ext = 'jpg') {
     $screenW = [E2E.Native]::ScreenWidth
     $screenH = [E2E.Native]::ScreenHeight
@@ -197,10 +204,7 @@ function Save-Shot([string]$Name, [int]$CX, [int]$CY, [int]$Half = 290, [string]
     $y = [math]::Max(0, $CY - $Half)
     $w = [math]::Min($screenW - $x, 2 * $Half)
     $h = [math]::Min($screenH - $y, 2 * $Half)
-    $bmp = [System.Drawing.Bitmap]::new($w, $h, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.CopyFromScreen($x, $y, 0, 0, [System.Drawing.Size]::new($w, $h), $script:CopyOp)
-    $g.Dispose()
+    $bmp = Get-ScreenBitmap $x $y $w $h
     $path = Join-Path $Out "$Name.$Ext"
     if ($Ext -eq 'png') {
         $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -217,10 +221,7 @@ function Save-Shot([string]$Name, [int]$CX, [int]$CY, [int]$Half = 290, [string]
 
 function Get-RegionMean([int]$CX, [int]$CY, [int]$Half = 8) {
     $size = 2 * $Half
-    $bmp = [System.Drawing.Bitmap]::new($size, $size)
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.CopyFromScreen($CX - $Half, $CY - $Half, 0, 0, [System.Drawing.Size]::new($size, $size), $script:CopyOp)
-    $g.Dispose()
+    $bmp = Get-ScreenBitmap ($CX - $Half) ($CY - $Half) $size $size
     $r = 0.0; $gr = 0.0; $b = 0.0
     for ($y = 0; $y -lt $size; $y++) {
         for ($x = 0; $x -lt $size; $x++) {
@@ -368,6 +369,9 @@ $wallpaper = Join-Path $Out 'wallpaper.png'
 New-Wallpaper $wallpaper $screenW $screenH
 Add-Check 'env/wallpaper' ([E2E.Native]::SetWallpaper($wallpaper)) ''
 Start-Sleep -Milliseconds 1500
+$minimized = [E2E.Native]::MinimizeAll([Diagnostics.Process]::GetCurrentProcess().Id)
+Add-Info ("minimized windows: " + ($minimized -join ' ; '))
+Start-Sleep -Milliseconds 800
 
 $cx0 = [int]($screenW / 2)
 $cy0 = [int]($screenH / 2)

@@ -553,6 +553,7 @@ internal sealed partial class OverlayWindow : Window
         ComputeOrbCenter();
 
         var session = BuildSession(out int sizePx, out int centerX, out int centerY);
+        long tSession = clock.ElapsedMilliseconds;
         _menuCenterX = centerX;
         _menuCenterY = centerY;
         _menuSizePx = sizePx;
@@ -565,6 +566,7 @@ internal sealed partial class OverlayWindow : Window
             backdrop = BackdropService.CaptureBlurred(centerX - sizePx / 2, centerY - sizePx / 2, sizePx, sizePx);
         }
 
+        long tBackdrop = clock.ElapsedMilliseconds;
         _state = OverlayState.Opening;
         _desktopTimer.Stop();
         _monitorTimer.Stop();
@@ -580,6 +582,7 @@ internal sealed partial class OverlayWindow : Window
             Win32.ShowWindow(_hwnd, Win32.SW_SHOWNOACTIVATE);
         }
 
+        long tWindow = clock.ElapsedMilliseconds;
         _orb.Opacity.Go(1, 120);
         _orb.Pop.Snap(1);
 
@@ -593,15 +596,19 @@ internal sealed partial class OverlayWindow : Window
         };
         _menu.Show(openSession, _config, _theme.Palette, _icons, edit);
         _state = OverlayState.Open;
+        long tVisuals = clock.ElapsedMilliseconds;
 
         BecomeActive();
         _mouseHook.Acquire("menu");
+        long tActive = clock.ElapsedMilliseconds;
 
         // latency to the first rendered frame
         void OnFirstFrame(object? s, EventArgs a)
         {
             CompositionTarget.Rendering -= OnFirstFrame;
-            Logger.Info($"Menu opened: {clock.ElapsedMilliseconds} ms to the first frame (window {sizePx}px, backdrop {(backdrop != null ? "yes" : "no")}).");
+            Logger.Info($"Menu opened: {clock.ElapsedMilliseconds} ms to the first frame " +
+                        $"[session {tSession}, backdrop {tBackdrop - tSession}, window {tWindow - tBackdrop}, visuals {tVisuals - tWindow}, activate {tActive - tVisuals} ms; " +
+                        $"window {sizePx}px, backdrop {(backdrop != null ? "yes" : "no")}].");
         }
 
         CompositionTarget.Rendering += OnFirstFrame;

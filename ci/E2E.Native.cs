@@ -68,6 +68,15 @@ namespace E2E
         [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hwnd);
         [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
         [DllImport("user32.dll")] static extern uint GetDpiForSystem();
+        [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hwnd, IntPtr dc);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int command);
+        [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr dc);
+        [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleBitmap(IntPtr dc, int width, int height);
+        [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
+        [DllImport("gdi32.dll")] static extern bool BitBlt(IntPtr dst, int x, int y, int w, int h, IntPtr src, int sx, int sy, uint rop);
+        [DllImport("gdi32.dll")] static extern bool DeleteDC(IntPtr dc);
+        [DllImport("gdi32.dll")] public static extern bool DeleteObject(IntPtr obj);
 
         public static int ScreenWidth { get { return GetSystemMetrics(0); } }
         public static int ScreenHeight { get { return GetSystemMetrics(1); } }
@@ -140,6 +149,47 @@ namespace E2E
         public static bool SetWallpaper(string path)
         {
             return SystemParametersInfo(0x14 /* SPI_SETDESKWALLPAPER */, 0, path, 3 /* update ini + broadcast */);
+        }
+
+        /// <summary>
+        /// Copies a screen region INCLUDING layered windows (CAPTUREBLT - System.Drawing's CopyFromScreen cannot combine it with
+        /// SRCCOPY). Returns an HBITMAP (Image.FromHbitmap, then DeleteObject) or zero.
+        /// </summary>
+        public static IntPtr CaptureScreen(int x, int y, int w, int h)
+        {
+            IntPtr screen = GetDC(IntPtr.Zero);
+            IntPtr mem = CreateCompatibleDC(screen);
+            IntPtr bmp = CreateCompatibleBitmap(screen, w, h);
+            IntPtr old = SelectObject(mem, bmp);
+            bool ok = BitBlt(mem, 0, 0, w, h, screen, x, y, 0x00CC0020u | 0x40000000u);
+            SelectObject(mem, old);
+            DeleteDC(mem);
+            ReleaseDC(IntPtr.Zero, screen);
+            if (!ok) { DeleteObject(bmp); return IntPtr.Zero; }
+            return bmp;
+        }
+
+        /// <summary>Minimizes every visible application window (the runner agent keeps a console on the desktop).</summary>
+        public static string[] MinimizeAll(int exceptPid)
+        {
+            var done = new List<string>();
+            EnumWindows(delegate (IntPtr hwnd, IntPtr l)
+            {
+                if (!IsWindowVisible(hwnd)) return true;
+                int p;
+                GetWindowThreadProcessId(hwnd, out p);
+                if (p == exceptPid) return true;
+                var c = new StringBuilder(256); GetClassName(hwnd, c, 256);
+                string cls = c.ToString();
+                if (cls == "Progman" || cls == "WorkerW" || cls == "Shell_TrayWnd" || cls == "Shell_SecondaryTrayWnd") return true;
+                var t = new StringBuilder(256); GetWindowText(hwnd, t, 256);
+                if (t.Length == 0) return true;
+                RECT r; GetWindowRect(hwnd, out r);
+                if (r.Width < 50 || r.Height < 50) return true;
+                if (ShowWindow(hwnd, 6 /* SW_MINIMIZE */)) done.Add(cls + " '" + t + "'");
+                return true;
+            }, IntPtr.Zero);
+            return done.ToArray();
         }
 
         // ---- keyboard ---------------------------------------------------------------
