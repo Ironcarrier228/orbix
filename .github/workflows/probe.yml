@@ -2,17 +2,27 @@ name: probe
 on:
   push:
     branches: [ 'arena/**' ]
-  workflow_dispatch:
 jobs:
   probe:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: dotnet info
+      - name: info
         shell: pwsh
         run: |
-          dotnet --info
-          Write-Host "Session: $env:SESSIONNAME  User: $env:USERNAME"
+          function Notice($title, $text) {
+            $t = $text -replace '%','%25' -replace "`r",'%0D' -replace "`n",'%0A'
+            Write-Host "::notice title=$title::$t"
+          }
+          $info = @()
+          $info += "OS: " + [System.Environment]::OSVersion.VersionString
+          $info += "SessionId: " + (Get-Process -Id $PID).SessionId + " SESSIONNAME=$env:SESSIONNAME"
+          $info += "User: $env:USERNAME"
+          $info += "SDKs: " + ((dotnet --list-sdks) -join "; ")
+          $info += "Runtimes: " + ((dotnet --list-runtimes) -join "; ")
           Add-Type -AssemblyName System.Windows.Forms
-          $s = [System.Windows.Forms.Screen]::PrimaryScreen
-          Write-Host "Screen: $($s.Bounds)"
+          $info += "Screens: " + (([System.Windows.Forms.Screen]::AllScreens | ForEach-Object { $_.Bounds.ToString() + " primary=" + $_.Primary }) -join " | ")
+          $info += "ISCC: " + (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")
+          $info += "choco: " + ((Get-Command choco -ErrorAction SilentlyContinue) -ne $null)
+          $info += "Nodes: " + ((Get-Command node -ErrorAction SilentlyContinue) -ne $null)
+          Notice "probe" ($info -join "`n")
