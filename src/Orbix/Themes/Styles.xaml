@@ -6,7 +6,7 @@
         Every style below is keyed: the overlay window is built in code and must not inherit anything.
     -->
 
-    <!-- ---- text ---- -->
+    <!-- == text == -->
     <Style x:Key="StText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="TextWrapping" Value="Wrap" />
@@ -33,7 +33,7 @@
         <Setter Property="Margin" Value="0,0,12,0" />
     </Style>
 
-    <!-- ---- button ---- -->
+    <!-- == button == -->
     <Style x:Key="StButton" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Background" Value="{DynamicResource Surface}" />
@@ -73,7 +73,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
     </Style>
 
-    <!-- ---- textbox ---- -->
+    <!-- == textbox == -->
     <Style x:Key="StTextBox" TargetType="TextBox">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
@@ -103,7 +103,7 @@
         </Setter>
     </Style>
 
-    <!-- ---- checkbox ---- -->
+    <!-- == checkbox == -->
     <Style x:Key="StCheckBox" TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -138,7 +138,7 @@
         </Setter>
     </Style>
 
-    <!-- ---- combobox ---- -->
+    <!-- == combobox == -->
     <Style x:Key="StComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Padding" Value="8,5" />
@@ -218,7 +218,7 @@
         </Setter>
     </Style>
 
-    <!-- ---- slider ---- -->
+    <!-- == slider == -->
     <Style x:Key="StSliderThumb" TargetType="Thumb">
         <Setter Property="Template">
             <Setter.Value>
@@ -272,7 +272,7 @@
         </Setter>
     </Style>
 
-    <!-- ---- scroll bar ---- -->
+    <!-- == scroll bar == -->
     <Style x:Key="StScrollThumb" TargetType="Thumb">
         <Setter Property="Template">
             <Setter.Value>
@@ -344,7 +344,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    <!-- ---- navigation list ---- -->
+    <!-- == navigation list == -->
     <Style x:Key="StNavItem" TargetType="ListBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource Muted}" />
         <Setter Property="Cursor" Value="Hand" />
@@ -376,7 +376,7 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
     </Style>
 
-    <!-- ---- plain list (items page) ---- -->
+    <!-- == plain list (items page) == -->
     <Style x:Key="StListItem" TargetType="ListBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Cursor" Value="Hand" />
