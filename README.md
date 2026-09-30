@@ -35,9 +35,9 @@
 |---|---|---|
 | ![орб](docs/img/orb-idle.png) | ![меню](docs/img/menu.jpg) | ![светлая тема](docs/img/light-menu.jpg) |
 
-| вложенные орбиты | режим правки | поиск набором текста |
+| вложенные орбиты | режим правки | окно параметров |
 |---|---|---|
-| ![орбиты](docs/img/menu-group3.jpg) | ![правка](docs/img/menu-edit.jpg) | ![поиск](docs/img/menu-search.jpg) |
+| ![орбиты](docs/img/menu-group3.jpg) | ![правка](docs/img/menu-edit.jpg) | ![параметры](docs/img/settings.jpg) |
 
 ## Сборка и запуск
 
