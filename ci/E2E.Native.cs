@@ -125,6 +125,27 @@ namespace E2E
         /// <summary>Forces a window rectangle (the CI helper form sometimes comes up zero-sized).</summary>
         public static void ForceRect(IntPtr hwnd, int x, int y, int w, int h) { MoveWindow(hwnd, x, y, w, h, true); ShowWindow(hwnd, 5 /*SW_SHOW*/); }
 
+        public static void Show(IntPtr hwnd) { ShowWindow(hwnd, 5 /*SW_SHOW*/); }
+
+        public static string TitleOf(IntPtr hwnd)
+        {
+            var t = new StringBuilder(256); GetWindowText(hwnd, t, 256);
+            return t.ToString();
+        }
+
+        /// <summary>All top-level window handles of a process.</summary>
+        public static IntPtr[] WindowHandles(int pid)
+        {
+            var list = new List<IntPtr>();
+            EnumWindows(delegate (IntPtr hwnd, IntPtr l)
+            {
+                int p; GetWindowThreadProcessId(hwnd, out p);
+                if (p == pid) list.Add(hwnd);
+                return true;
+            }, IntPtr.Zero);
+            return list.ToArray();
+        }
+
         public static string CursorPos() { POINT p; GetCursorPos(out p); return p.X + "," + p.Y; }
         public static bool IsVisible(IntPtr hwnd) { return IsWindowVisible(hwnd); }
         public static long ExStyle(IntPtr hwnd) { return GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64(); }

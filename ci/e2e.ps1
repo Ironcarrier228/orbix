@@ -272,14 +272,27 @@ function Start-Child([string]$Mode) {
     $child = Start-Process -FilePath 'pwsh' -ArgumentList @('-NoProfile', '-NonInteractive', '-File', (Join-Path $PSScriptRoot 'e2e-window.ps1'), '-Mode', $Mode) -PassThru -WindowStyle Hidden
     $script:Children.Add($child)
     $title = "OrbixE2E-$Mode"
+
+    # find the helper window: by title first, then by scanning the child process (the form can appear before it is shown)
     $hwnd = [IntPtr]::Zero
-    $null = Wait-Until { $h = [E2E.Native]::FindWindow(0, $title); if ($h -ne [IntPtr]::Zero -and [E2E.Native]::IsVisible($h)) { $script:__h = $h; $true } else { $false } } 20000 100
-    $hwnd = $script:__h
+    $null = Wait-Until {
+        $h = [E2E.Native]::FindWindow(0, $title)
+        if ($h -eq [IntPtr]::Zero) {
+            foreach ($w in [E2E.Native]::WindowHandles($child.Id)) {
+                if ([E2E.Native]::TitleOf($w) -eq $title) { $h = $w; break }
+            }
+        }
+        if ($h -ne [IntPtr]::Zero) { $script:__childH = $h; $true } else { $false }
+    } 20000 100
+    $hwnd = $script:__childH
+    $script:__childH = [IntPtr]::Zero
+
     if ($hwnd -ne [IntPtr]::Zero) {
-        Start-Sleep -Milliseconds 400
+        # WinForms sometimes leaves the form hidden in the CI session: show and place it ourselves
+        [E2E.Native]::Show($hwnd)
+        Start-Sleep -Milliseconds 300
         [E2E.Native]::Activate($hwnd)
         if ([E2E.Native]::GetRect($hwnd).Width -le 50) {
-            # the form came up without a usable rectangle: place it ourselves instead of failing the scenario
             $w = [E2E.Native]::GetSystemMetrics(0); $hgt = [E2E.Native]::GetSystemMetrics(1)
             [E2E.Native]::ForceRect($hwnd, [int](($w - 520) / 2), [int](($hgt - 340) / 2), 520, 340)
             Start-Sleep -Milliseconds 300
