@@ -55,7 +55,7 @@ internal static class Logger
 
     private static void Write(string level, string message)
     {
-        Debug.WriteLine("[Orbix] " + message);
+        System.Diagnostics.Debug.WriteLine("[Orbix] " + message);
         var path = _path;
         if (path == null)
         {
