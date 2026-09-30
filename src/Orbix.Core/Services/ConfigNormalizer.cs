@@ -127,6 +127,13 @@ public static class ConfigNormalizer
     {
         if (!string.IsNullOrWhiteSpace(item.Target))
         {
+            if (item.Kind == ItemKind.Url &&
+                Uri.TryCreate(item.Target, UriKind.Absolute, out var uri) &&
+                !string.IsNullOrEmpty(uri.Host))
+            {
+                return uri.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? uri.Host[4..] : uri.Host;
+            }
+
             var target = item.Target!.TrimEnd('\\', '/');
             int slash = target.LastIndexOfAny(new[] { '\\', '/' });
             var file = slash >= 0 ? target[(slash + 1)..] : target;

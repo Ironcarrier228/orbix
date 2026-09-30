@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Orbix - the WPF application (tray + always-on-top orb + radial menu).
+    Everything that can be tested without Windows lives in Orbix.Core; this project only contains
+    Win32 interop, services and the user interface.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Orbix</RootNamespace>
+    <AssemblyName>Orbix</AssemblyName>
+    <StartupObject>Orbix.Program</StartupObject>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\orbix.ico</ApplicationIcon>
+    <Platforms>AnyCPU</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyTitle>Orbix</AssemblyTitle>
+    <Description>Radial quick-launch menu</Description>
+
+    <!-- Start-up time and idle memory: no ICU, no server GC, no background GC thread. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollector>false</ServerGarbageCollector>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>false</TieredPGO>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App.xaml is compiled as a normal page: the entry point is Program.Main (single instance check first). -->
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\orbix.ico" />
+    <Resource Include="Assets\orbix.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Orbix.Core\Orbix.Core.csproj" />
+  </ItemGroup>
+
+</Project>
