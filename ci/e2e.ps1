@@ -196,7 +196,7 @@ function Add-LogTrace($App, [string]$Label) {
 }
 
 function Save-LogTail($App) {
-    $lines = @(Read-Log $App | Where-Object { $_ -notmatch ' DEBUG Layout ' } | Select-Object -Last 26 | ForEach-Object { if ($_.Length -gt 230) { $_.Substring(0, 230) } else { $_ } })
+    $lines = @(Read-Log $App | Where-Object { $_ -notmatch ' DEBUG Layout ' } | Select-Object -Last 70 | ForEach-Object { if ($_.Length -gt 230) { $_.Substring(0, 230) } else { $_ } })
     $script:LogTails.Add("--- $($App.Name) ---`n" + ($lines -join "`n"))
 }
 
@@ -731,7 +731,7 @@ Invoke-Scenario 'settings' {
         if ($app.Hwnd -eq [IntPtr]::Zero) { return }
         Start-Sleep -Milliseconds 800
         $open = Invoke-Orbix $app @('--settings')
-        $hwnd = [IntPtr]::Zero
+        $script:__settingsHwnd = [IntPtr]::Zero
         $null = Wait-Until {
             $found = [IntPtr]::Zero
             foreach ($w in [E2E.Native]::WindowHandles($app.Proc.Id)) {
