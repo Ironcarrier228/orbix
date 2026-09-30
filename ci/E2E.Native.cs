@@ -62,7 +62,7 @@ namespace E2E
         [DllImport("user32.dll")] static extern bool GetCursorPos(out POINT point);
         [DllImport("user32.dll")] static extern uint SendInput(uint count, INPUT[] inputs, int size);
         [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
-        [DllImport("user32.dll")] static extern int GetSystemMetrics(int index);
+        [DllImport("user32.dll")] public static extern int GetSystemMetrics(int index);
         [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
         [DllImport("user32.dll")] static extern uint MapVirtualKey(uint code, uint mapType);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool SystemParametersInfo(uint action, uint param, string value, uint flags);
@@ -158,9 +158,27 @@ namespace E2E
             return SystemParametersInfo(0x14 /* SPI_SETDESKWALLPAPER */, 0, path, 3 /* update ini + broadcast */);
         }
 
+        [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint flags);
+        [DllImport("msimg32.dll")] static extern bool AlphaBlend(IntPtr dst, int dx, int dy, int dw, int dh, IntPtr src, int sx, int sy, int sw, int sh, BLENDFUNCTION blend);
+        [DllImport("gdi32.dll")] static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFO bmi, uint usage, out IntPtr bits, IntPtr section, uint offset);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BLENDFUNCTION { public byte BlendOp; public byte BlendFlags; public byte SourceConstantAlpha; public byte AlphaFormat; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BITMAPINFO
+        {
+            public int biSize; public int biWidth; public int biHeight; public short biPlanes; public short biBitCount;
+            public uint biCompression; public uint biSizeImage; public int biXPelsPerMeter; public int biYPelsPerMeter;
+            public uint biClrUsed; public uint biClrImportant;
+        }
+
         /// <summary>
-        /// Copies a screen region INCLUDING layered windows (CAPTUREBLT - System.Drawing's CopyFromScreen cannot combine it with
-        /// SRCCOPY). Returns an HBITMAP (Image.FromHbitmap, then DeleteObject) or zero.
+        /// Captures a screen region including layered (per-pixel alpha) windows: first the DWM-composed desktop
+        /// (plain SRCCOPY - layered windows are excluded from it), then every visible layered window in the region
+        /// is printed with PrintWindow and alpha-blended on top. System.Drawing's CopyFromScreen cannot do this
+        /// (CAPTUREBLT only paints part of the frame on this OS build).
+        /// Returns an HBITMAP (Image.FromHbitmap, then DeleteObject) or zero.
         /// </summary>
         public static IntPtr CaptureScreen(int x, int y, int w, int h)
         {
@@ -168,12 +186,59 @@ namespace E2E
             IntPtr mem = CreateCompatibleDC(screen);
             IntPtr bmp = CreateCompatibleBitmap(screen, w, h);
             IntPtr old = SelectObject(mem, bmp);
-            bool ok = BitBlt(mem, 0, 0, w, h, screen, x, y, 0x00CC0020u | 0x40000000u);
+            bool ok = BitBlt(mem, 0, 0, w, h, screen, x, y, 0x00CC0020u); // SRCCOPY
+            if (!ok)
+            {
+                SelectObject(mem, old); DeleteDC(mem); ReleaseDC(IntPtr.Zero, screen); DeleteObject(bmp);
+                return IntPtr.Zero;
+            }
+
+            var layered = LayeredWindowsIn(x, y, w, h);
+            foreach (var hwnd in layered)
+            {
+                RECT r; GetWindowRect(hwnd, out r);
+                int rw = r.Width, rh = r.Height;
+                if (rw <= 0 || rh <= 0 || rw > 4096 || rh > 4096) continue;
+                IntPtr wdc = CreateCompatibleDC(screen);
+                var bi = new BITMAPINFO
+                {
+                    biSize = 40, biWidth = rw, biHeight = -rh, biPlanes = 1, biBitCount = 32, biCompression = 0,
+                };
+                IntPtr bits;
+                IntPtr wbmp = CreateDIBSection(wdc, ref bi, 0, out bits, IntPtr.Zero, 0);
+                if (wbmp == IntPtr.Zero || bits == IntPtr.Zero) { DeleteDC(wdc); continue; }
+                IntPtr wold = SelectObject(wdc, wbmp);
+                if (!PrintWindow(hwnd, wdc, 2 /*PW_RENDERFULLCONTENT*/))
+                {
+                    SelectObject(wdc, wold); DeleteObject(wbmp); DeleteDC(wdc);
+                    continue;
+                }
+
+                var bf = new BLENDFUNCTION { BlendOp = 0, BlendFlags = 0, SourceConstantAlpha = 255, AlphaFormat = 1 /*AC_SRC_ALPHA*/ };
+                AlphaBlend(mem, r.Left - x, r.Top - y, rw, rh, wdc, 0, 0, rw, rh, bf);
+                SelectObject(wdc, wold); DeleteObject(wbmp); DeleteDC(wdc);
+            }
+
             SelectObject(mem, old);
             DeleteDC(mem);
             ReleaseDC(IntPtr.Zero, screen);
-            if (!ok) { DeleteObject(bmp); return IntPtr.Zero; }
             return bmp;
+        }
+
+        private static List<IntPtr> LayeredWindowsIn(int x, int y, int w, int h)
+        {
+            var found = new List<IntPtr>();
+            EnumWindows(delegate (IntPtr hwnd, IntPtr l)
+            {
+                if (!IsWindowVisible(hwnd)) return true;
+                long ex = GetWindowLongPtr(hwnd, -20 /*GWL_EXSTYLE*/).ToInt64();
+                if ((ex & 0x00080000 /*WS_EX_LAYERED*/) == 0) return true;
+                RECT r; GetWindowRect(hwnd, out r);
+                if (r.Right <= x || r.Left >= x + w || r.Bottom <= y || r.Top >= y + h) return true;
+                found.Add(hwnd);
+                return true;
+            }, IntPtr.Zero);
+            return found;
         }
 
         /// <summary>Minimizes every visible application window (the runner agent keeps a console on the desktop).</summary>
