@@ -13,7 +13,14 @@ param(
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/Annotate.ps1"
 Add-Type -AssemblyName System.Drawing
-Add-Type -TypeDefinition (Get-Content (Join-Path $PSScriptRoot 'E2E.Native.cs') -Raw)
+$compErrors = $null
+Add-Type -TypeDefinition (Get-Content (Join-Path $PSScriptRoot 'E2E.Native.cs') -Raw) -ErrorVariable compErrors
+if (-not ('E2E.Native' -as [type])) {
+    # a broken helper class must not look like sixty application failures
+    Write-Annotation 'e2e-summary' ("FATAL: E2E.Native.cs did not compile: " + (($compErrors | ForEach-Object { $_.ToString() }) -join ' | '))
+    exit 1
+}
+
 [void][E2E.Native]::SetProcessDPIAware()
 
 $Exe = (Resolve-Path $Exe).Path
