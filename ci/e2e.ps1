@@ -203,6 +203,13 @@ function Save-LogTail($App) {
 function Test-LogClean($App, [string]$Name) {
     $bad = @(Read-Log $App | Where-Object { $_ -match ' ERROR ' })
     Add-Check "$Name/log-has-no-errors" ($bad.Count -eq 0) (($bad | Select-Object -First 3) -join ' || ')
+    if ($bad.Count -gt 0) {
+        # ship the first error with its stack frames: annotation messages are the only log channel
+        $all = @(Read-Log $App)
+        $idx = [Array]::IndexOf($all, $bad[0])
+        $block = @($all[$idx..([math]::Min($idx + 16, $all.Count - 1))] | Where-Object { $_ -match ' ERROR ' -or $_ -match '^\s+(at |::)' })
+        Add-Info ("$Name app error block:`n" + (($block | ForEach-Object { if ($_.Length -gt 190) { $_.Substring(0, 190) } else { $_ } }) -join "`n"))
+    }
 }
 
 # screen region as a bitmap, layered windows included

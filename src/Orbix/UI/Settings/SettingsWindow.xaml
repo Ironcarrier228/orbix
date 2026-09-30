@@ -5,7 +5,7 @@
         xmlns:loc="clr-namespace:Orbix.UI.Settings"
         Title="{loc:Loc Settings.Title}" Width="840" Height="620" MinWidth="700" MinHeight="480"
         WindowStartupLocation="CenterScreen" Background="{DynamicResource Bg}"
-        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13">
+        FontSize="13">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="196" />

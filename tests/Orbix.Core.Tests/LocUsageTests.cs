@@ -5,8 +5,7 @@ using Xunit;
 namespace Orbix.Core.Tests;
 
 /// <summary>
-/// Every localization key that the UI actually uses (Loc.T with a literal key in code, loc:Loc in XAML)
-/// must exist in the string table. (The reverse direction is not checked: some keys are composed
+/// Every localization key referenced by the UI code or markup must exist in the string table. (The reverse direction is not checked: some keys are composed
 /// at run time, e.g. launch error keys travel as strings.)
 /// </summary>
 public sealed class LocUsageTests
