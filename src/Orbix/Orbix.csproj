@@ -37,6 +37,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The WPF SDK strips these from the implicit usings (name clashes with WPF types); we want them back. -->
+    <Using Include="System.IO" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- App.xaml is compiled as a normal page: the entry point is Program.Main (single instance check first). -->
     <ApplicationDefinition Remove="App.xaml" />
     <Page Include="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />

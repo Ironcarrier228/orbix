@@ -36,7 +36,7 @@ internal enum OverlayState
 /// </summary>
 internal sealed partial class OverlayWindow : Window
 {
-    private const double Margin = 14;
+    private const double EdgeMargin = 14;
 
     private readonly AppConfig _config;
     private readonly ConfigService _configService;
@@ -682,13 +682,13 @@ internal sealed partial class OverlayWindow : Window
             Gap = gap,
             StartAngleDeg = menu.StartAngle,
             MaxVisibleOrbits = menu.MaxVisibleOrbits,
-            MaxCenterRadius = Math.Max(orbRadius + menu.ItemSize / 2 + gap + 6, monitorHalf - Margin - menu.ItemSize / 2),
+            MaxCenterRadius = Math.Max(orbRadius + menu.ItemSize / 2 + gap + 6, monitorHalf - EdgeMargin - menu.ItemSize / 2),
             MinItemSize = Math.Max(28, menu.ItemSize * 0.55),
             MaxArcDeg = 300,
         };
 
         double outer = LayoutPlanner.ComputeMaxOuterRadius(_config.ActiveProfile.Items, options, 1);
-        double half = Math.Min(outer + Margin + 4, monitorHalf);
+        double half = Math.Min(outer + EdgeMargin + 4, monitorHalf);
         sizePx = EvenCeil(half * 2 * scale);
 
         // If the orb was moved close to an edge, the menu is shifted so that it stays on the monitor.
