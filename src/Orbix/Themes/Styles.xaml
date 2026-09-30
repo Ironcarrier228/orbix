@@ -139,6 +139,14 @@
     </Style>
 
     <!-- == combobox == -->
+    <!--
+        Every ComboBox must get an explicit ItemTemplate: without one the ContentPresenter expands the
+        item object through its default template, and on current Windows builds that path throws
+        "Cannot find non-neutral culture related to 'en-us'" (XmlLanguage.GetSpecificCulture).
+    -->
+    <DataTemplate x:Key="DtComboLabel">
+        <TextBlock Text="{Binding Label}" Foreground="{DynamicResource Text}" Padding="1,1" />
+    </DataTemplate>
     <Style x:Key="StComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
         <Setter Property="Padding" Value="8,5" />
@@ -176,6 +184,7 @@
         <Setter Property="Background" Value="{DynamicResource Surface}" />
         <Setter Property="MinWidth" Value="150" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource StComboBoxItem}" />
+        <Setter Property="ItemTemplate" Value="{StaticResource DtComboLabel}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
