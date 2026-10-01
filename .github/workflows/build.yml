@@ -1,0 +1,77 @@
+name: build
+
+on:
+  push:
+    branches: ['arena/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build:
+    name: build-and-test
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: ./ci/build.ps1
+
+      - name: Test
+        run: ./ci/test.ps1
+
+  e2e:
+    name: e2e-windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # to publish the e2e screenshots to the ci-shots branch
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # the very file that is shipped as the portable build is the one that gets tested
+      - name: Publish portable Orbix.exe
+        run: ./ci/publish.ps1 -Variant portable
+
+      - name: End-to-end test on the desktop
+        run: ./ci/e2e.ps1 -Exe ./artifacts/portable/Orbix.exe -Out ./artifacts/e2e
+
+      # annotations truncate long messages, so the screenshots travel as a commit on a scratch branch
+      - name: Publish screenshots to ci-shots
+        if: always()
+        run: |
+          if (-not (Test-Path ./artifacts/e2e)) { Write-Host "::notice title=shots::no artifacts dir"; exit 0 }
+          $shots = @(Get-ChildItem -Path ./artifacts/e2e -File -Recurse | Where-Object { $_.Extension -eq '.jpg' -or $_.Extension -eq '.png' })
+          Write-Host ("::notice title=shots::found " + $shots.Count + " images")
+          if ($shots.Count -eq 0) { exit 0 }
+          git config user.name "orbix-ci"
+          git config user.email "ci@users.noreply.github.com"
+          Remove-Item docs/img -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force docs/img | Out-Null
+          foreach ($f in $shots) { Copy-Item $f.FullName -Destination docs/img/ }
+          git add docs/img
+          git commit -m "ci: e2e screenshots [skip ci]"
+          git push --force origin HEAD:refs/heads/ci-shots
+          Write-Host "::notice title=shots::pushed ci-shots"
