@@ -17,9 +17,9 @@
     </Style>
     <Style x:Key="StTitle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Text}" />
-        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontSize" Value="24" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Margin" Value="0,0,0,14" />
+        <Setter Property="Margin" Value="0,2,0,16" />
     </Style>
     <Style x:Key="StGroup" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Muted}" />
@@ -232,7 +232,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Ellipse Width="15" Height="15" Fill="{DynamicResource Surface}" Stroke="{DynamicResource Accent}" StrokeThickness="2" />
+                    <Ellipse Width="16" Height="16" Fill="{DynamicResource Accent}" Stroke="{DynamicResource Surface}" StrokeThickness="3" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -307,7 +307,7 @@
     </Style>
     <Style x:Key="StScrollBar" TargetType="ScrollBar">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Width" Value="10" />
+        <Setter Property="Width" Value="8" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
@@ -360,8 +360,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="Bd" Background="Transparent" CornerRadius="7" Padding="12,8" Margin="2,1">
-                        <ContentPresenter />
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="8" Padding="12,8" Margin="3,1">
+                        <Grid>
+                            <Border x:Name="Pill" HorizontalAlignment="Left" Width="3" Height="16" CornerRadius="2"
+                                    Background="{DynamicResource Accent}" Visibility="Collapsed" />
+                            <ContentPresenter Margin="13,0,0,0" VerticalAlignment="Center" />
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -370,6 +374,7 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSoft}" />
+                            <Setter TargetName="Pill" Property="Visibility" Value="Visible" />
                             <Setter Property="Foreground" Value="{DynamicResource Text}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -414,5 +419,143 @@
         <Setter Property="Padding" Value="3" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource StListItem}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+    <!-- == settings window chrome & cards == -->
+    <!-- brand gradient for the little orb logos (caption + about page) -->
+    <RadialGradientBrush x:Key="OrbLogo" Center="0.35,0.3" GradientOrigin="0.3,0.25" RadiusX="0.85" RadiusY="0.85">
+        <GradientStop Offset="0" Color="#B9AFFF" />
+        <GradientStop Offset="0.55" Color="#7A6CF0" />
+        <GradientStop Offset="1" Color="#3E2FA8" />
+    </RadialGradientBrush>
+
+    <!-- caption (title bar) buttons -->
+    <Style x:Key="StCaptionButton" TargetType="Button">
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHi}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Text}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSoft}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="StCaptionClose" TargetType="Button" BasedOn="{StaticResource StCaptionButton}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#C42B1C" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#9B2416" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- card: a rounded elevated panel grouping related rows -->
+    <Style x:Key="StCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="18,14" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <!-- card title -->
+    <Style x:Key="StSection" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <!-- value chip shown next to sliders -->
+    <Style x:Key="StChip" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceHi}" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="MinWidth" Value="44" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- fluent toggle switch (still a CheckBox for the code-behind) -->
+    <Style x:Key="StToggle" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Track" Width="42" Height="22" CornerRadius="11"
+                            Background="{DynamicResource SurfaceHi}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                        <Border x:Name="Thumb" Width="12" Height="12" CornerRadius="6" Background="{DynamicResource Muted}"
+                                HorizontalAlignment="Left" Margin="4,0" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="Tr" X="0" />
+                            </Border.RenderTransform>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Thumb" Property="Background" Value="{DynamicResource AccentText}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Tr" Storyboard.TargetProperty="X"
+                                                         To="24" Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Tr" Storyboard.TargetProperty="X"
+                                                         To="0" Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

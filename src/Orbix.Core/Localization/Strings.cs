@@ -96,6 +96,11 @@ internal static class Strings
         A("Settings.Appearance", "Оформление", "Appearance");
         A("Settings.About", "О программе", "About");
         A("Settings.Language", "Язык интерфейса", "Interface language");
+        A("Settings.CardSystem", "Система", "System");
+        A("Settings.CardSize", "Размер и прозрачность", "Size & opacity");
+        A("Settings.CardGeometry", "Геометрия", "Geometry");
+        A("Settings.CardThemeAccent", "Тема и цвет акцента", "Theme & accent colour");
+        A("Settings.CardEditor", "Свойства элемента", "Item properties");
         A("Settings.Autostart", "Запускать вместе с Windows", "Start with Windows");
         A("Settings.HotkeysGroup", "Горячие клавиши", "Hotkeys");
         A("Settings.HotkeyEnabled", "Глобальные горячие клавиши", "Global hotkeys");

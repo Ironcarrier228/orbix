@@ -3,302 +3,545 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:Orbix.UI.Settings"
-        Title="{loc:Loc Settings.Title}" Width="840" Height="620" MinWidth="700" MinHeight="480"
+        Title="{loc:Loc Settings.Title}" Width="880" Height="640" MinWidth="720" MinHeight="500"
         WindowStartupLocation="CenterScreen" Background="{DynamicResource Bg}"
         FontSize="13">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="196" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <!-- custom title bar: we paint the caption ourselves, the system only keeps the frame and shadow -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="38" ResizeBorderThickness="6" GlassFrameThickness="0"
+                      UseAeroCaptionButtons="False" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
 
-        <!-- navigation -->
-        <Border Grid.Column="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}"
-                BorderThickness="0,0,1,0" Padding="10,14">
-            <ListBox x:Name="Nav" Style="{StaticResource StNav}" SelectedIndex="0">
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.General}" /></ListBoxItem>
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.Orb}" /></ListBoxItem>
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.Menu}" /></ListBoxItem>
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.Items}" /></ListBoxItem>
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.Appearance}" /></ListBoxItem>
-                <ListBoxItem><TextBlock Text="{loc:Loc Settings.About}" /></ListBoxItem>
-            </ListBox>
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ================= caption ================= -->
+        <Border Grid.Row="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <Ellipse Width="16" Height="16" Fill="{StaticResource OrbLogo}" Margin="0,0,9,0"
+                             VerticalAlignment="Center" />
+                    <TextBlock Text="{loc:Loc Settings.Title}" Foreground="{DynamicResource Text}"
+                               FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <Button x:Name="CaptionMin" Style="{StaticResource StCaptionButton}" Click="CaptionMinClick">
+                        <TextBlock Text="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10" />
+                    </Button>
+                    <Button x:Name="CaptionMax" Style="{StaticResource StCaptionButton}" Click="CaptionMaxClick">
+                        <TextBlock x:Name="CaptionMaxGlyph" Text="&#xE922;" FontFamily="Segoe MDL2 Assets" FontSize="10" />
+                    </Button>
+                    <Button x:Name="CaptionClose" Style="{StaticResource StCaptionClose}" Click="CaptionCloseClick"
+                            Foreground="{DynamicResource Muted}">
+                        <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10" />
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <Grid Grid.Column="1">
-            <!-- ================= general ================= -->
-            <ScrollViewer x:Name="PageGeneral" VerticalScrollBarVisibility="Auto" Padding="26,22,26,22">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.General}" />
+        <!-- ================= body ================= -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="204" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.Language}" />
-                    <ComboBox x:Name="LanguageCombo" Style="{StaticResource StComboBox}" HorizontalAlignment="Left" />
-
-                    <CheckBox x:Name="AutostartCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Autostart}" Margin="0,12,0,0" />
-
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.HotkeysGroup}" />
-                    <CheckBox x:Name="HotkeyEnabledCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.HotkeyEnabled}" />
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HotkeyOpen}" />
-                        <ContentControl x:Name="HotOpenHost" Grid.Column="1" />
-                        <TextBlock x:Name="HotOpenState" Grid.Column="2" Style="{StaticResource StMuted}" Margin="10,0,0,0" VerticalAlignment="Center" />
-                    </Grid>
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HotkeyOrb}" />
-                        <ContentControl x:Name="HotToggleHost" Grid.Column="1" />
-                        <TextBlock x:Name="HotToggleState" Grid.Column="2" Style="{StaticResource StMuted}" Margin="10,0,0,0" VerticalAlignment="Center" />
-                    </Grid>
-
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.ConfigGroup}" />
-                    <StackPanel Orientation="Horizontal">
-                        <Button x:Name="ExportButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.Export}" />
-                        <Button x:Name="ImportButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.Import}" Margin="8,0,0,0" />
-                        <Button x:Name="OpenDirButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.OpenFolder}" Margin="8,0,0,0" />
-                    </StackPanel>
-                    <TextBlock x:Name="DataDirText" Style="{StaticResource StMuted}" FontSize="12" Margin="0,8,0,0" />
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- ================= orb ================= -->
-            <ScrollViewer x:Name="PageOrb" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,22,26,22">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Orb}" />
-
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbSize}" />
-                        <Slider x:Name="OrbSizeSlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="32" Maximum="160" SmallChange="2" LargeChange="8" IsSnapToTickEnabled="True" TickFrequency="2" />
-                        <TextBlock x:Name="OrbSizeVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="34" />
-                    </Grid>
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbOpacity}" />
-                        <Slider x:Name="OrbOpacitySlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="10" Maximum="100" SmallChange="5" LargeChange="10" IsSnapToTickEnabled="True" TickFrequency="5" />
-                        <TextBlock x:Name="OrbOpacityVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="34" />
-                    </Grid>
-                    <CheckBox x:Name="BreathingCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Breathing}" Margin="0,10,0,0" />
-
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.VisibilityGroup}" />
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Visibility}" />
-                        <ComboBox x:Name="VisibilityCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
-                    </Grid>
-                    <Grid Margin="0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Monitor}" />
-                        <ComboBox x:Name="MonitorCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
-                    </Grid>
-                    <CheckBox x:Name="AllowMoveCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.AllowMove}" />
-
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.OrbStyleGroup}" />
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbColor}" />
-                        <TextBox x:Name="OrbColorText" Grid.Column="1" Style="{StaticResource StTextBox}" />
-                        <Button x:Name="OrbColorClear" Grid.Column="2" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Clear}" />
-                    </Grid>
-                    <Grid Margin="0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="280" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbImage}" />
-                        <TextBox x:Name="OrbImageText" Grid.Column="1" Style="{StaticResource StTextBox}" />
-                        <Button x:Name="OrbImageBrowse" Grid.Column="2" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Browse}" />
-                        <Button x:Name="OrbImageClear" Grid.Column="3" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Clear}" />
-                    </Grid>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- ================= menu ================= -->
-            <ScrollViewer x:Name="PageMenu" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,22,26,22">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Menu}" />
-
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Radius}" />
-                        <Slider x:Name="RadiusSlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="90" Maximum="360" SmallChange="4" LargeChange="16" IsSnapToTickEnabled="True" TickFrequency="4" />
-                        <TextBlock x:Name="RadiusVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="34" />
-                    </Grid>
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.ItemSize}" />
-                        <Slider x:Name="ItemSizeSlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="36" Maximum="96" SmallChange="2" LargeChange="8" IsSnapToTickEnabled="True" TickFrequency="2" />
-                        <TextBlock x:Name="ItemSizeVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="34" />
-                    </Grid>
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HoverDelay}" />
-                        <Slider x:Name="HoverDelaySlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="0" Maximum="1500" SmallChange="20" LargeChange="100" IsSnapToTickEnabled="True" TickFrequency="20" />
-                        <TextBlock x:Name="HoverDelayVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="44" />
-                    </Grid>
-                    <Grid Margin="0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.SubmenuOpen}" />
-                        <ComboBox x:Name="SubmenuCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
-                    </Grid>
-
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.MenuBehaviourGroup}" />
-                    <CheckBox x:Name="WheelCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Wheel}" />
-                    <CheckBox x:Name="KeyboardCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Keyboard}" />
-                    <CheckBox x:Name="TooltipsCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Tooltips}" />
-                    <CheckBox x:Name="RingsCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Rings}" />
-                    <CheckBox x:Name="ConfirmCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Confirm}" />
-                    <CheckBox x:Name="AnimationsCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Animations}" />
-                    <CheckBox x:Name="BlurCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.Blur}" />
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.BlurOpacity}" />
-                        <Slider x:Name="BlurOpacitySlider" Grid.Column="1" Style="{StaticResource StSlider}" Minimum="20" Maximum="95" SmallChange="5" LargeChange="10" IsSnapToTickEnabled="True" TickFrequency="5" />
-                        <TextBlock x:Name="BlurOpacityVal" Grid.Column="2" Style="{StaticResource StText}" Margin="10,0,0,0" Width="34" />
-                    </Grid>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- ================= items ================= -->
-            <Grid x:Name="PageItems" Visibility="Collapsed" Margin="26,22,26,22">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Items}" />
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="250" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <WrapPanel Grid.Row="0" Margin="0,0,0,8">
-                            <Button x:Name="AddAppButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddApp}" />
-                            <Button x:Name="AddGroupButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddGroup}" />
-                            <Button x:Name="AddLinkButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddLink}" />
-                            <Button x:Name="AddCommandButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddCommand}" />
-                            <Button x:Name="AddSystemButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddSystem}" />
-                        </WrapPanel>
-                        <ListBox x:Name="ItemsList" Grid.Row="1" Style="{StaticResource StList}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Text}" TextTrimming="CharacterEllipsis" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button x:Name="MoveUpButton" Style="{StaticResource StButton}" Padding="9,5" Content="{loc:Loc Settings.Up}" />
-                            <Button x:Name="MoveDownButton" Style="{StaticResource StButton}" Padding="9,5" Margin="6,0,0,0" Content="{loc:Loc Settings.Down}" />
-                            <Button x:Name="DeleteButton" Style="{StaticResource StButtonDanger}" Padding="9,5" Margin="6,0,0,0" Content="{loc:Loc Settings.Delete}" />
+            <!-- navigation -->
+            <Border Grid.Column="0" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}"
+                    BorderThickness="0,0,1,0" Padding="8,10">
+                <ListBox x:Name="Nav" Style="{StaticResource StNav}" SelectedIndex="0">
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.General}" VerticalAlignment="Center" />
                         </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE7C8;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.Orb}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.Menu}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8FD;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.Items}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE790;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.Appearance}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Loc Settings.About}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Border>
+
+            <Grid Grid.Column="1">
+                <!-- ================= general ================= -->
+                <ScrollViewer x:Name="PageGeneral" VerticalScrollBarVisibility="Auto" Padding="26,20,26,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.General}" />
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.CardSystem}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Language}" />
+                                    <ComboBox x:Name="LanguageCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Autostart}" />
+                                    <CheckBox x:Name="AutostartCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.HotkeysGroup}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HotkeyEnabled}" />
+                                    <CheckBox x:Name="HotkeyEnabledCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HotkeyOpen}" />
+                                    <ContentControl x:Name="HotOpenHost" Grid.Column="1" />
+                                    <TextBlock x:Name="HotOpenState" Grid.Column="2" Style="{StaticResource StMuted}" FontSize="12"
+                                               Margin="10,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HotkeyOrb}" />
+                                    <ContentControl x:Name="HotToggleHost" Grid.Column="1" />
+                                    <TextBlock x:Name="HotToggleState" Grid.Column="2" Style="{StaticResource StMuted}" FontSize="12"
+                                               Margin="10,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.ConfigGroup}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="ExportButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.Export}" />
+                                    <Button x:Name="ImportButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.Import}" Margin="8,0,0,0" />
+                                    <Button x:Name="OpenDirButton" Style="{StaticResource StButton}" Content="{loc:Loc Settings.OpenFolder}" Margin="8,0,0,0" />
+                                </StackPanel>
+                                <TextBlock x:Name="DataDirText" Style="{StaticResource StMuted}" FontSize="12" Margin="0,10,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ================= orb ================= -->
+                <ScrollViewer x:Name="PageOrb" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,20,26,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Orb}" />
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.CardSize}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbSize}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="OrbSizeSlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="32" Maximum="160" SmallChange="2" LargeChange="8"
+                                                IsSnapToTickEnabled="True" TickFrequency="2" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="OrbSizeVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbOpacity}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="OrbOpacitySlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="10" Maximum="100" SmallChange="5" LargeChange="10"
+                                                IsSnapToTickEnabled="True" TickFrequency="5" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="OrbOpacityVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Breathing}" />
+                                    <CheckBox x:Name="BreathingCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.VisibilityGroup}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Visibility}" />
+                                    <ComboBox x:Name="VisibilityCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Monitor}" />
+                                    <ComboBox x:Name="MonitorCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.AllowMove}" />
+                                    <CheckBox x:Name="AllowMoveCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.OrbStyleGroup}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbColor}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBox x:Name="OrbColorText" Style="{StaticResource StTextBox}" Width="180" />
+                                        <Button x:Name="OrbColorClear" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Clear}" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.OrbImage}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBox x:Name="OrbImageText" Style="{StaticResource StTextBox}" Width="260" />
+                                        <Button x:Name="OrbImageBrowse" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Browse}" />
+                                        <Button x:Name="OrbImageClear" Style="{StaticResource StButton}" Margin="8,0,0,0" Content="{loc:Loc Settings.Clear}" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ================= menu ================= -->
+                <ScrollViewer x:Name="PageMenu" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,20,26,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Menu}" />
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.CardGeometry}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Radius}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="RadiusSlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="90" Maximum="360" SmallChange="4" LargeChange="16"
+                                                IsSnapToTickEnabled="True" TickFrequency="4" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="RadiusVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.ItemSize}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="ItemSizeSlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="36" Maximum="96" SmallChange="2" LargeChange="8"
+                                                IsSnapToTickEnabled="True" TickFrequency="2" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="ItemSizeVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.HoverDelay}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="HoverDelaySlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="0" Maximum="1500" SmallChange="20" LargeChange="100"
+                                                IsSnapToTickEnabled="True" TickFrequency="20" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="HoverDelayVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.SubmenuOpen}" />
+                                    <ComboBox x:Name="SubmenuCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.MenuBehaviourGroup}" />
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Wheel}" />
+                                    <CheckBox x:Name="WheelCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Keyboard}" />
+                                    <CheckBox x:Name="KeyboardCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Tooltips}" />
+                                    <CheckBox x:Name="TooltipsCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Rings}" />
+                                    <CheckBox x:Name="RingsCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Confirm}" />
+                                    <CheckBox x:Name="ConfirmCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Animations}" />
+                                    <CheckBox x:Name="AnimationsCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Blur}" />
+                                    <CheckBox x:Name="BlurCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.BlurOpacity}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Slider x:Name="BlurOpacitySlider" Style="{StaticResource StSlider}" Width="240"
+                                                Minimum="20" Maximum="95" SmallChange="5" LargeChange="10"
+                                                IsSnapToTickEnabled="True" TickFrequency="5" />
+                                        <Border Style="{StaticResource StChip}" Margin="10,0,0,0">
+                                            <TextBlock x:Name="BlurOpacityVal" Style="{StaticResource StText}" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ================= items ================= -->
+                <Grid x:Name="PageItems" Visibility="Collapsed" Margin="26,20,26,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Items}" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="260" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource StCard}" Margin="0" Padding="12,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                                    <Button x:Name="AddAppButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddApp}" />
+                                    <Button x:Name="AddGroupButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddGroup}" />
+                                    <Button x:Name="AddLinkButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddLink}" />
+                                    <Button x:Name="AddCommandButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddCommand}" />
+                                    <Button x:Name="AddSystemButton" Style="{StaticResource StButton}" Padding="9,5" Margin="0,0,6,6" Content="{loc:Loc Settings.AddSystem}" />
+                                </WrapPanel>
+                                <ListBox x:Name="ItemsList" Grid.Row="1" Style="{StaticResource StList}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Text}" TextTrimming="CharacterEllipsis" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button x:Name="MoveUpButton" Style="{StaticResource StButton}" Padding="9,5" Content="{loc:Loc Settings.Up}" />
+                                    <Button x:Name="MoveDownButton" Style="{StaticResource StButton}" Padding="9,5" Margin="6,0,0,0" Content="{loc:Loc Settings.Down}" />
+                                    <Button x:Name="DeleteButton" Style="{StaticResource StButtonDanger}" Padding="9,5" Margin="6,0,0,0" Content="{loc:Loc Settings.Delete}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource StCard}" Margin="16,0,0,0" Padding="16,12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Style="{StaticResource StSection}" Margin="0,0,0,6" Text="{loc:Loc Settings.CardEditor}" />
+                                <TextBlock Grid.Row="1" x:Name="ItemsHint" Style="{StaticResource StMuted}" FontSize="12" Margin="0,0,0,8"
+                                           Text="{loc:Loc Settings.ItemsHint}" />
+                                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                                    <ContentControl x:Name="EditorHost" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
                     </Grid>
-                    <Border Grid.Column="1" Margin="16,0,0,0" Background="{DynamicResource Surface}" CornerRadius="10"
-                            BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="16,10">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" x:Name="ItemsHint" Style="{StaticResource StMuted}" FontSize="12" Text="{loc:Loc Settings.ItemsHint}" />
-                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                                <ContentControl x:Name="EditorHost" />
-                            </ScrollViewer>
-                        </Grid>
-                    </Border>
                 </Grid>
+
+                <!-- ================= appearance ================= -->
+                <ScrollViewer x:Name="PageAppearance" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,20,26,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Appearance}" />
+
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource StSection}" Text="{loc:Loc Settings.CardThemeAccent}" />
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Theme}" />
+                                    <ComboBox x:Name="ThemeCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
+                                </Grid>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.SystemAccent}" />
+                                    <CheckBox x:Name="SystemAccentCheck" Grid.Column="1" Style="{StaticResource StToggle}" />
+                                </Grid>
+                                <TextBlock Style="{StaticResource StGroup}" Margin="0,0,0,8" Text="{loc:Loc Settings.Accent}" />
+                                <WrapPanel x:Name="AccentSwatches" Margin="0,0,0,12" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.AccentCustom}" />
+                                    <TextBox x:Name="AccentText" Grid.Column="1" Style="{StaticResource StTextBox}" Width="180" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- ================= about ================= -->
+                <ScrollViewer x:Name="PageAbout" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,20,26,20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.About}" />
+                        <Border Style="{StaticResource StCard}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="46" Height="46" Fill="{StaticResource OrbLogo}" Margin="0,0,16,0" VerticalAlignment="Center" />
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock x:Name="VersionText" Style="{StaticResource StText}" FontSize="16" FontWeight="SemiBold" />
+                                    <TextBlock Style="{StaticResource StMuted}" Margin="0,4,0,0" Text="{loc:Loc Settings.AboutText}" />
+                                    <TextBlock Style="{StaticResource StMuted}" Margin="0,6,0,0">
+                                        <Run Text="{loc:Loc Settings.Repo}" />
+                                        <Run Text=" github.com/Ironcarrier228/orbix" />
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource StMuted}" Margin="0,4,0,0" Text="{loc:Loc Settings.License}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
-
-            <!-- ================= appearance ================= -->
-            <ScrollViewer x:Name="PageAppearance" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,22,26,22">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.Appearance}" />
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.Theme}" />
-                        <ComboBox x:Name="ThemeCombo" Grid.Column="1" Style="{StaticResource StComboBox}" />
-                    </Grid>
-                    <CheckBox x:Name="SystemAccentCheck" Style="{StaticResource StCheckBox}" Content="{loc:Loc Settings.SystemAccent}" Margin="0,10,0,4" />
-                    <TextBlock Style="{StaticResource StGroup}" Text="{loc:Loc Settings.Accent}" />
-                    <WrapPanel x:Name="AccentSwatches" Margin="0,2,0,8" />
-                    <Grid Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="180" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Style="{StaticResource StLabel}" Text="{loc:Loc Settings.AccentCustom}" />
-                        <TextBox x:Name="AccentText" Grid.Column="1" Style="{StaticResource StTextBox}" />
-                    </Grid>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- ================= about ================= -->
-            <ScrollViewer x:Name="PageAbout" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Padding="26,22,26,22">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource StTitle}" Text="{loc:Loc Settings.About}" />
-                    <TextBlock x:Name="VersionText" Style="{StaticResource StText}" FontSize="15" FontWeight="SemiBold" />
-                    <TextBlock Style="{StaticResource StMuted}" Margin="0,10,0,0" Text="{loc:Loc Settings.AboutText}" />
-                    <TextBlock Style="{StaticResource StMuted}" Margin="0,6,0,0">
-                        <Run Text="{loc:Loc Settings.Repo}" />
-                        <Run Text=" github.com/Ironcarrier228/orbix" />
-                    </TextBlock>
-                    <TextBlock Style="{StaticResource StMuted}" Margin="0,6,0,0" Text="{loc:Loc Settings.License}" />
-                </StackPanel>
-            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>

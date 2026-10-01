@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -58,6 +59,11 @@ internal partial class SettingsWindow : Window
 
         BuildCombos();
         BuildAccentSwatches();
+
+        SourceInitialized += (_, _) => UpdateFrame();
+        StateChanged += (_, _) => SyncCaption();
+        _theme.Changed += OnThemeChanged;
+        Closed += (_, _) => _theme.Changed -= OnThemeChanged;
         WireEvents();
         LoadAll();
 
@@ -93,6 +99,46 @@ internal partial class SettingsWindow : Window
     }
 
     // ---- construction ----
+
+    private void CaptionMinClick(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
+
+    private void CaptionMaxClick(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized) SystemCommands.RestoreWindow(this);
+        else SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CaptionCloseClick(object sender, RoutedEventArgs e) => Close();
+
+    /// <summary>Keeps the restore/maximize glyph and the client margin in sync with the window state.</summary>
+    private void SyncCaption()
+    {
+        CaptionMaxGlyph.Text = WindowState == WindowState.Maximized ? "\xE923" : "\xE922";
+        RootGrid.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+    }
+
+    private void OnThemeChanged(object? sender, EventArgs e) => UpdateFrame();
+
+    /// <summary>Asks DWM for a dark window frame when the dark theme is active (no-op on old Windows).</summary>
+    private void UpdateFrame()
+    {
+        try
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (hwnd != IntPtr.Zero)
+            {
+                int dark = _theme.IsDark ? 1 : 0;
+                DwmSetWindowAttribute(hwnd, 20, ref dark, 4); // DWMWA_USE_IMMERSIVE_DARK_MODE
+            }
+        }
+        catch (Exception)
+        {
+            // pre-Win10 builds lack the attribute: keep the default frame
+        }
+    }
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
     private void BuildCombos()
     {
